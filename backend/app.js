@@ -28,14 +28,17 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/posts', postRoutes);
 
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-// Serve static files for the frontend in production
+// Serve static files for frontend in production
 if (process.env.NODE_ENV === 'production') {
+    const path = require('path');
     app.use(express.static(path.join(__dirname, '../frontend/build')));
 
+    // Catch-all route for serving the frontend
     app.get('*', (req, res) => {
         res.sendFile(path.resolve(__dirname, '../frontend/build', 'index.html'));
     });
 }
+
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
