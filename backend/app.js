@@ -22,6 +22,19 @@ app.use(cors());
 app.use(bodyParser.json({ limit: "25mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "25mb" }));
 
+// Enable CORS for frontend requests during development
+if (process.env.NODE_ENV === "development") {
+    app.use(
+      cors({
+        origin: "http://localhost:3000", // Frontend URL during development
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        credentials: true, // Allow cookies if needed
+      })
+    );
+  } else {
+    app.use(cors()); // Enable unrestricted CORS for production (adjust as necessary)
+  }
+
 // Register API routes BEFORE serving the frontend
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
