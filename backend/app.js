@@ -22,18 +22,24 @@ app.use(cors());
 app.use(bodyParser.json({ limit: "25mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "25mb" }));
 
+// Log incoming requests for debugging
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
 // Enable CORS for frontend requests during development
 if (process.env.NODE_ENV === "development") {
-    app.use(
-      cors({
-        origin: "http://localhost:3000", // Frontend URL during development
-        methods: ["GET", "POST", "PUT", "DELETE"],
-        credentials: true, // Allow cookies if needed
-      })
-    );
-  } else {
-    app.use(cors()); // Enable unrestricted CORS for production (adjust as necessary)
-  }
+  app.use(
+    cors({
+      origin: "http://localhost:3000", // Frontend URL during development
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      credentials: true, // Allow cookies if needed
+    })
+  );
+} else {
+  app.use(cors());
+}
 
 // Register API routes BEFORE serving the frontend
 app.use("/api/auth", authRoutes);
@@ -44,12 +50,12 @@ app.use("/api/posts", postRoutes);
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/build")));
 
-  // Catch-all route for serving the React app
-  app.get("*", (req, res) => {
+  // Catch-all route for React frontend
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
     res.sendFile(path.resolve(__dirname, "../frontend/build", "index.html"));
   });
 }
 
-// Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Export the app for Vercel
+module.exports = app;
